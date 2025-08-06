@@ -145,9 +145,13 @@ function add32(a, b) {
 
 
 
+// 统一定义设备地址
+const deviceHost = "192.168.1.1";
+const deviceBaseUrl = `http://${deviceHost}`;
+
 (async () => {
   const timestamp = Date.now();
-  const authUrl = `http://192.168.1.1/login.cgi?_=${timestamp}`;
+  const authUrl = `${deviceBaseUrl}/login.cgi?_=${timestamp}`;
 
   const req = {
     url: authUrl,
@@ -157,18 +161,16 @@ function add32(a, b) {
   try {
     const res = await $task.fetch(req);
 
-    const authHeader =
-      res.headers["Www-Authenticate"] ||
-      res.headers["WWW-Authenticate"] ||
-      res.headers["www-authenticate"];
+    const authHeader = res.headers["Www-Authenticate"];
 
-    if (!authHeader) {
-      console.log("❌ 未获取到 WWW-Authenticate");
+    if (!authHeader || !authHeader.includes("Digest")) {
+      console.log("❌ 未获取到有效的 Digest 验证头，非目标设备，脚本终止");
+      //$notify("🔍 跳过执行", "", "当前网络下无法访问目标设备");
       $done({});
       return;
     }
 
-    // 提取 realm、nonce、qop（使用字符串方式）
+    // 提取认证参数
     let realm = null, nonce = null, qop = null;
     const parts = authHeader.split(",");
     parts.forEach(part => {
@@ -193,25 +195,21 @@ function add32(a, b) {
     console.log(`nonce: ${nonce}`);
     console.log(`qop: ${qop}`);
 
-    // 固定用户名密码
     const username = "admin";
     const password = "admin";
-
-    // Digest 签名参数
     const method = "GET";
-    const uri = "/cgi/protected.cgi";  // 固定设备资源路径
+    const uri = "/cgi/protected.cgi";
     const nc = "00000001";
 
     console.log("开始计算md5...");
-    // 生成随机 cnonce（16位）
     const cnonce = md5(timestamp.toString()).substr(0, 16);
     console.log(`cnonce的md5计算完成: ${cnonce}`);
-    // 计算 HA1 / HA2 / response
+
     const ha1 = md5(`${username}:${realm}:${password}`);
     const ha2 = md5(`${method}:${uri}`);
     const responseHash = md5(`${ha1}:${nonce}:${nc}:${cnonce}:${qop}:${ha2}`);
-    // 构造 Digest 登录 URL
-    const loginUrl = `http://192.168.1.1/login.cgi?Action=Digest` +
+
+    const loginUrl = `${deviceBaseUrl}/login.cgi?Action=Digest` +
       `&username=${username}` +
       `&realm=${realm}` +
       `&nonce=${nonce}` +
@@ -221,21 +219,21 @@ function add32(a, b) {
       `&temp=marvell` +
       `&_=${timestamp}`;
 
-    /**  const loginUrl = `http://192.168.1.1/login.cgi?Action=Digest
-                      `&_=${timestamp}`;
-   */
-
     console.log("📡 登录请求地址:");
     console.log(loginUrl);
+
     const authorization = `Digest username="${username}", realm="${realm}", nonce="${nonce}", uri="${uri}", response="${responseHash}", qop=${qop}, nc=${nc}, cnonce="${cnonce}"`;
+
     console.log("📡 authorization:");
     console.log(authorization);
-    // 发起登录请求
+
     const loginRes = await $task.fetch({
-      url: loginUrl, method: "GET", headers: {
+      url: loginUrl,
+      method: "GET",
+      headers: {
         "Authorization": authorization,
         "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_4_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Mobile/15E148 Safari/604.1",
-        "Referer": "http://192.168.1.1/index.html",
+        "Referer": `${deviceBaseUrl}/index.html`,
         "Accept": "*/*",
         "X-Requested-With": "XMLHttpRequest",
         "Accept-Language": "zh-cn",
@@ -250,10 +248,8 @@ function add32(a, b) {
     if (loginRes.statusCode === 200) {
       console.log("✅ 登录成功！");
 
-
-      // 发送二次请求：获取状态 JSON
       const ts = Date.now();
-      const statusUrl = `http://192.168.1.1/xml_action.cgi?method=get&module=duster&file=json_status_info${ts}`;
+      const statusUrl = `${deviceBaseUrl}/xml_action.cgi?method=get&module=duster&file=json_status_info${ts}`;
 
       const statusReq = {
         url: statusUrl,
@@ -261,7 +257,7 @@ function add32(a, b) {
         headers: {
           "Authorization": authorization,
           "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_4_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Mobile/15E148 Safari/604.1",
-          "Referer": "http://192.168.1.1/index.html",
+          "Referer": `${deviceBaseUrl}/index.html`,
           "Accept": "application/json",
           "X-Requested-With": "XMLHttpRequest",
           "Accept-Language": "zh-cn",
@@ -278,9 +274,7 @@ function add32(a, b) {
 
         if (statusRes.statusCode === 200) {
           console.log("✅ 状态获取成功 ↓↓↓");
-          // console.log(statusRes.body);
 
-          // 如果返回是 JSON 可解析，也可用 JSON.parse 打印结构
           try {
             const json = JSON.parse(statusRes.body);
             console.log("📦 JSON 结构 ↓↓↓");
@@ -292,6 +286,7 @@ function add32(a, b) {
               const s = seconds % 60;
               return `${h}小时 ${m}分钟 ${s}秒`;
             }
+
             const battery = json.battery_percent;
             const charging = json.battery_charging === "1" ? "🟢正在充电" : "🔴未充电";
             const signal = json.signal_quality;
@@ -321,7 +316,6 @@ function add32(a, b) {
       console.log("❌ 登录失败，状态码:", loginRes.statusCode);
       $notify("登录失败", "", `状态码: ${loginRes.statusCode}`);
     }
-
 
     $done({});
   } catch (err) {
