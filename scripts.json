@@ -1,0 +1,8 @@
+{
+    "name":"自用脚本",
+    "description":"仅供学习目的使用",
+    "task":[
+        {"config": "*/30 * * * * https://raw.githubusercontent.com/crztang/rule_script/refs/heads/master/ou_ben_status.js, tag=欧本状态查询, img-url=bolt.square.fill.system, enabled=true", "addons": ""},
+        
+    ]
+}
