@@ -289,14 +289,14 @@ const deviceBaseUrl = `http://${deviceHost}`;
             }
 
             const battery = json.battery_percent;
-            const charging = json.battery_charging === "1" ? "🟢正在充电" : "🔴未充电";
+            const charging = json.battery_charging === "1" ? "🟢 正在充电" : "🔴 未充电";
             const signal = json.signal_quality;
             const rssi = json.rssi;
             const uptime = formatUptime(parseInt(json.run_seconds || "0"));
 
-            const summary = `🔋电量: ${battery}%\n${charging}\n📶信号强度: ${signal} / RSSI: ${rssi}\n⏱️运行时长: ${uptime}`;
+            const summary = `🔋 电量: ${battery}%\n${charging}\n📶 信号强度: ${signal} / RSSI: ${rssi}\n⌛ 运行时长: ${uptime}`;
 
-            console.log("📢状态通知 ↓↓↓");
+            console.log("📢 状态通知 ↓↓↓");
             console.log(summary);
 
             $notify("📡 设备状态", "", summary);
