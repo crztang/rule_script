@@ -155,7 +155,8 @@ const deviceBaseUrl = `http://${deviceHost}`;
 
   const req = {
     url: authUrl,
-    method: "GET"
+    method: "GET",
+     timeout: 3 * 1000, // 设置超时时间为3秒
   };
 
   try {
@@ -305,21 +306,21 @@ const deviceBaseUrl = `http://${deviceHost}`;
             $notify("状态获取失败", "", "返回内容无法解析 JSON");
           }
         } else {
-          console.log("❌ 状态请求失败，状态码:", statusRes.statusCode);
+          console.log("状态请求失败，状态码:", statusRes.statusCode);
           console.log(statusRes.body);
         }
       } catch (err) {
-        console.log("❌ 获取状态时出错:");
+        console.log("获取状态时出错:");
         console.log(JSON.stringify(err, null, 2));
       }
     } else {
-      console.log("❌ 登录失败，状态码:", loginRes.statusCode);
+      console.log("登录失败，状态码:", loginRes.statusCode);
       $notify("登录失败", "", `状态码: ${loginRes.statusCode}`);
     }
 
     $done({});
   } catch (err) {
-    console.log("❌ 执行失败:");
+    console.log("执行失败:");
     try {
       if (typeof err === "string") {
         console.log("错误字符串:", err);
