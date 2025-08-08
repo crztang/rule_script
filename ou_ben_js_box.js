@@ -149,9 +149,10 @@ function add32(a, b) {
 const deviceHost = "192.168.1.1";
 const deviceBaseUrl = `http://${deviceHost}`;
 const $ = new Env(`欧本流量查询`);
-$.ouben_dev_no = $.getdata("ouben_dev_no") || 'your_dev_no_here'; // 替换为实际的 dev_no
+$.ouben_dev_no = $.getdata("ouben_dev_no");
 
 (async () => {
+  console.log("📦 从 BoxJS 读取的 ouben_dev_no:", $.ouben_dev_no);
   const timestamp = Date.now();
   const authUrl = `${deviceBaseUrl}/login.cgi?_=${timestamp}`;
 
@@ -298,7 +299,7 @@ $.ouben_dev_no = $.getdata("ouben_dev_no") || 'your_dev_no_here'; // 替换为�
 
 
 
-            if (!dev_no) {
+            if (!$.ouben_dev_no) {
               $notify("📡 MIFI 监控", "", "❌ 未配置 dev_no，请到 BoxJS 中填写");
               $done();
             }
@@ -310,7 +311,7 @@ $.ouben_dev_no = $.getdata("ouben_dev_no") || 'your_dev_no_here'; // 替换为�
                 "Content-Type": "application/json"
               },
               body: JSON.stringify({
-                dev_no: ouben_dev_no
+                dev_no: $.ouben_dev_no
               }),
               timeout: 3000
             });
