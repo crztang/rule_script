@@ -152,7 +152,7 @@ const $ = new Env(`欧本流量查询`);
 $.ouben_dev_no = $.getdata("ouben_dev_no");
 
 (async () => {
-  console.log("📦 从 BoxJS 读取的 ouben_dev_no:", $.ouben_dev_no);
+  ////console.log("📦 从 BoxJS 读取的 ouben_dev_no:", $.ouben_dev_no);
   const timestamp = Date.now();
   const authUrl = `${deviceBaseUrl}/login.cgi?_=${timestamp}`;
 
@@ -168,9 +168,9 @@ $.ouben_dev_no = $.getdata("ouben_dev_no");
     const authHeader = res.headers["Www-Authenticate"];
 
     if (!authHeader || !authHeader.includes("Digest")) {
-      console.log("❌ 未获取到有效的 Digest 验证头，非目标设备，脚本终止");
-      //$notify("🔍 跳过执行", "", "当前网络下无法访问目标设备");
-      $done({});
+      ////console.log("❌ 未获取到有效的 Digest 验证头，非目标设备，脚本终止");
+      //$.msg("🔍 跳过执行", "", "当前网络下无法访问目标设备");
+      $.done({});
       return;
     }
 
@@ -189,15 +189,15 @@ $.ouben_dev_no = $.getdata("ouben_dev_no");
     });
 
     if (!realm || !nonce || !qop) {
-      console.log("❌ 认证参数提取失败");
-      $done({});
+      //console.log("❌ 认证参数提取失败");
+      $.done({});
       return;
     }
 
-    console.log("✅ 提取认证参数:");
-    console.log(`realm: ${realm}`);
-    console.log(`nonce: ${nonce}`);
-    console.log(`qop: ${qop}`);
+    //console.log("✅ 提取认证参数:");
+    //console.log(`realm: ${realm}`);
+    //console.log(`nonce: ${nonce}`);
+    //console.log(`qop: ${qop}`);
 
     const username = "admin";
     const password = "admin";
@@ -205,9 +205,9 @@ $.ouben_dev_no = $.getdata("ouben_dev_no");
     const uri = "/cgi/protected.cgi";
     const nc = "00000001";
 
-    console.log("开始计算md5...");
+    //console.log("开始计算md5...");
     const cnonce = md5(timestamp.toString()).substr(0, 16);
-    console.log(`cnonce的md5计算完成: ${cnonce}`);
+    //console.log(`cnonce的md5计算完成: ${cnonce}`);
 
     const ha1 = md5(`${username}:${realm}:${password}`);
     const ha2 = md5(`${method}:${uri}`);
@@ -223,13 +223,13 @@ $.ouben_dev_no = $.getdata("ouben_dev_no");
       `&temp=marvell` +
       `&_=${timestamp}`;
 
-    console.log("📡 登录请求地址:");
-    console.log(loginUrl);
+    //console.log("📡 登录请求地址:");
+    //console.log(loginUrl);
 
     const authorization = `Digest username="${username}", realm="${realm}", nonce="${nonce}", uri="${uri}", response="${responseHash}", qop=${qop}, nc=${nc}, cnonce="${cnonce}"`;
 
-    console.log("📡 authorization:");
-    console.log(authorization);
+    //console.log("📡 authorization:");
+    //console.log(authorization);
 
     const loginRes = await $task.fetch({
       url: loginUrl,
@@ -250,7 +250,7 @@ $.ouben_dev_no = $.getdata("ouben_dev_no");
     });
 
     if (loginRes.statusCode === 200) {
-      console.log("✅ 登录成功！");
+      //console.log("✅ 登录成功！");
 
       const ts = Date.now();
       const statusUrl = `${deviceBaseUrl}/xml_action.cgi?method=get&module=duster&file=json_status_info${ts}`;
@@ -277,12 +277,12 @@ $.ouben_dev_no = $.getdata("ouben_dev_no");
         const statusRes = await $task.fetch(statusReq);
 
         if (statusRes.statusCode === 200) {
-          console.log("✅ 状态获取成功 ↓↓↓");
+          //console.log("✅ 状态获取成功 ↓↓↓");
 
           try {
             const json = JSON.parse(statusRes.body);
-            console.log("📦 JSON 结构 ↓↓↓");
-            console.log(JSON.stringify(json, null, 2));
+            //console.log("📦 JSON 结构 ↓↓↓");
+            //console.log(JSON.stringify(json, null, 2));
 
             function formatUptime(seconds) {
               const h = Math.floor(seconds / 3600);
@@ -300,8 +300,8 @@ $.ouben_dev_no = $.getdata("ouben_dev_no");
 
 
             if (!$.ouben_dev_no) {
-              $notify("📡 MIFI 监控", "", "❌ 未配置 dev_no，请到 BoxJS 中填写");
-              $done();
+              $.msg("📡 MIFI 监控", "", "❌ 未配置 dev_no，请到 BoxJS 中填写");
+              $.done();
             }
 
             const cardRes = await $task.fetch({
@@ -316,13 +316,13 @@ $.ouben_dev_no = $.getdata("ouben_dev_no");
               timeout: 3000
             });
 
-            console.log("📡 卡信息响应 ↓↓↓");
-            console.log(cardRes.body);
+            //console.log("📡 卡信息响应 ↓↓↓");
+            //console.log(cardRes.body);
 
             const cardData = JSON.parse(cardRes.body);
 
             if (cardData.code !== 1 || !cardData.data) {
-              console.log("❌ 卡信息接口返回异常");
+              //console.log("❌ 卡信息接口返回异常");
               return null;
             }
 
@@ -341,42 +341,42 @@ $.ouben_dev_no = $.getdata("ouben_dev_no");
               `⏰ 报告时间: ${reportTime}\n` +
               `💾 剩余流量: ${remainMB} MB`;
 
-            console.log("📢 状态通知 ↓↓↓");
-            console.log(summary);
+            //console.log("📢 状态通知 ↓↓↓");
+            //console.log(summary);
 
-            $notify("📡 设备状态", "", summary);
+            $.msg("📡 设备状态", "", summary);
 
           } catch (e) {
-            console.log("⚠️ 返回内容不是合法 JSON");
-            $notify("状态获取失败", "", "返回内容无法解析 JSON");
+            //console.log("⚠️ 返回内容不是合法 JSON");
+            $.msg("状态获取失败", "", "返回内容无法解析 JSON");
           }
         } else {
-          console.log("状态请求失败，状态码:", statusRes.statusCode);
-          console.log(statusRes.body);
+          //console.log("状态请求失败，状态码:", statusRes.statusCode);
+          //console.log(statusRes.body);
         }
       } catch (err) {
-        console.log("获取状态时出错:");
-        console.log(JSON.stringify(err, null, 2));
+        //console.log("获取状态时出错:");
+        //console.log(JSON.stringify(err, null, 2));
       }
     } else {
-      console.log("登录失败，状态码:", loginRes.statusCode);
-      $notify("登录失败", "", `状态码: ${loginRes.statusCode}`);
+      //console.log("登录失败，状态码:", loginRes.statusCode);
+      $.msg("登录失败", "", `状态码: ${loginRes.statusCode}`);
     }
 
-    $done({});
+    $.done({});
   } catch (err) {
-    console.log("执行失败:");
+    //console.log("执行失败:");
     try {
       if (typeof err === "string") {
-        console.log("错误字符串:", err);
+        //console.log("错误字符串:", err);
       } else if (err instanceof Error) {
-        console.log("错误对象:", err.message);
+        //console.log("错误对象:", err.message);
       } else {
-        console.log("错误详情:", JSON.stringify(err, null, 2));
+        //console.log("错误详情:", JSON.stringify(err, null, 2));
       }
     } catch (innerErr) {
-      console.log("无法解析错误信息");
+      //console.log("无法解析错误信息");
     }
-    $done({});
+    $.done({});
   }
 })();
