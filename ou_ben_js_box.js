@@ -148,6 +148,8 @@ function add32(a, b) {
 // 统一定义设备地址
 const deviceHost = "192.168.1.1";
 const deviceBaseUrl = `http://${deviceHost}`;
+const $ = new Env(`欧本流量查询`);
+
 
 (async () => {
   const timestamp = Date.now();
