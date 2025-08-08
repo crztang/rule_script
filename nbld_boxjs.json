@@ -21,7 +21,7 @@
                 }
             ],
             "descs_html": [
-                "<h4 align=\"center\">测试说明<a href=\"https://raw.githubusercontent.com/NobyDa/Script/master/Bilibili-DailyBonus/Manga.js\">脚本注释</a></h4>"
+                "<h4 align=\"center\">测试说明</h4>"
             ],
             "script": "https://raw.githubusercontent.com/crztang/rule_script/refs/heads/master/ou_ben_box_js.js",
             "author": "@NobyDa",
