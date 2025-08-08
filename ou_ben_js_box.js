@@ -149,7 +149,7 @@ function add32(a, b) {
 const deviceHost = "192.168.1.1";
 const deviceBaseUrl = `http://${deviceHost}`;
 const $ = new Env(`欧本流量查询`);
-
+$.ouben_dev_no = $.getdata("ouben_dev_no") || 'your_dev_no_here'; // 替换为实际的 dev_no
 
 (async () => {
   const timestamp = Date.now();
@@ -296,7 +296,7 @@ const $ = new Env(`欧本流量查询`);
             const rssi = json.rssi;
             const uptime = formatUptime(parseInt(json.run_seconds || "0"));
 
-            const ouben_dev_no = $.getdata("ouben_dev_no");
+
 
             if (!dev_no) {
               $notify("📡 MIFI 监控", "", "❌ 未配置 dev_no，请到 BoxJS 中填写");
@@ -339,7 +339,7 @@ const $ = new Env(`欧本流量查询`);
               `⌛ 运行时长: ${uptime}\n` +
               `⏰ 报告时间: ${reportTime}\n` +
               `💾 剩余流量: ${remainMB} MB`;
-              
+
             console.log("📢 状态通知 ↓↓↓");
             console.log(summary);
 
