@@ -1,0 +1,26 @@
+{
+    "id": "nbld_boxjs",
+    "name": "nbld应用订阅",
+    "author": "@nbld",
+    "icon": "https://avatars3.githubusercontent.com/u/29748519?s=460&u=392a19e85465abbcb1791c9b8b32184a16e6795e&v=4",
+    "repo": "",
+    "apps": [
+        {
+            "id": "ouben",
+            "name": "欧本流量查询",
+            "keys": [
+                "ouben_dev_no"
+            ],
+            "descs_html": [
+                "<h4 align=\"center\">测试说明<a href=\"https://raw.githubusercontent.com/NobyDa/Script/master/Bilibili-DailyBonus/Manga.js\">脚本注释</a></h4>"
+            ],
+            "script": "https://raw.githubusercontent.com/crztang/rule_script/refs/heads/master/ou_ben_box_js.js",
+            "author": "@NobyDa",
+            "repo": "https://github.com/NobyDa/Script/blob/master/Bilibili-DailyBonus/Manga.js",
+            "icons": [
+                "https://raw.githubusercontent.com/NobyDa/mini/master/Alpha/manga.png",
+                "https://raw.githubusercontent.com/NobyDa/mini/master/Color/manga.png"
+            ]
+        }
+    ]
+}
