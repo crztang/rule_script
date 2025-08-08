@@ -11,6 +11,15 @@
             "keys": [
                 "ouben_dev_no"
             ],
+            "settings": [
+                {
+                    "id": "ouben_dev_no",
+                    "name": "设备编号(dev_no)",
+                    "val": "",
+                    "type": "text",
+                    "desc": "请输入欧本设备编号"
+                }
+            ],
             "descs_html": [
                 "<h4 align=\"center\">测试说明<a href=\"https://raw.githubusercontent.com/NobyDa/Script/master/Bilibili-DailyBonus/Manga.js\">脚本注释</a></h4>"
             ],
