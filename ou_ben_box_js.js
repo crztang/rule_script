@@ -334,17 +334,15 @@ $.ouben_dev_no = $.getdata("ouben_dev_no");
 
 
             const summary =
-              `🔋 电量: ${battery}%\n` +
-              `${charging}\n` +
               `📶 信号强度: ${signal} / RSSI: ${rssi}\n` +
               `⌛ 运行时长: ${uptime}\n` +
               `⏰ 报告时间: ${reportTime}\n` +
-              `💾 剩余流量: ${remainMB} MB`;
+              `💾 剩余流量: ${remainMB} GB`;
 
             //console.log("📢 状态通知 ↓↓↓");
             //console.log(summary);
 
-            $.msg("📡 设备状态", "", summary);
+            $.msg(`📡 设备状态 🔋 电量: ${battery}% ${charging}`, "", summary);
 
           } catch (e) {
             //console.log("⚠️ 返回内容不是合法 JSON");
