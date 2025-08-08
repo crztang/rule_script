@@ -30,6 +30,32 @@
                 "https://raw.githubusercontent.com/NobyDa/mini/master/Alpha/manga.png",
                 "https://raw.githubusercontent.com/NobyDa/mini/master/Color/manga.png"
             ]
+        },
+        {
+            "id": "test",
+            "name": "测试通知",
+            "keys": [
+                "test_dev_no"
+            ],
+            "settings": [
+                {
+                    "id": "test_dev_no",
+                    "name": "测试设备编号(dev_no)",
+                    "val": "",
+                    "type": "text",
+                    "desc": "请输入欧本设备编号"
+                }
+            ],
+            "descs_html": [
+                "<h4 align=\"center\">测试说明<a href=\"https://raw.githubusercontent.com/NobyDa/Script/master/Bilibili-DailyBonus/Manga.js\">脚本注释</a></h4>"
+            ],
+            "script": "https://raw.githubusercontent.com/crztang/rule_script/refs/heads/master/test.js",
+            "author": "@NobyDa",
+            "repo": "https://github.com/NobyDa/Script/blob/master/Bilibili-DailyBonus/Manga.js",
+            "icons": [
+                "https://raw.githubusercontent.com/NobyDa/mini/master/Alpha/manga.png",
+                "https://raw.githubusercontent.com/NobyDa/mini/master/Color/manga.png"
+            ]
         }
     ]
 }
