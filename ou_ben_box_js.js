@@ -144,240 +144,161 @@ function add32(a, b) {
 }
 
 
-
 // 统一定义设备地址
 const deviceHost = "192.168.1.1";
 const deviceBaseUrl = `http://${deviceHost}`;
 const $ = new Env(`欧本流量查询`);
 $.ouben_dev_no = $.getdata("ouben_dev_no");
 
+// 入口
 (async () => {
-  ////console.log("📦 从 BoxJS 读取的 ouben_dev_no:", $.ouben_dev_no);
-  const timestamp = Date.now();
-  const authUrl = `${deviceBaseUrl}/login.cgi?_=${timestamp}`;
-
-  const req = {
-    url: authUrl,
-    method: "GET",
-    timeout: 3 * 1000, // 设置超时时间为3秒
-  };
-
   try {
-    const res = await $task.fetch(req);
-
-    const authHeader = res.headers["Www-Authenticate"];
-
-    if (!authHeader || !authHeader.includes("Digest")) {
-      ////console.log("❌ 未获取到有效的 Digest 验证头，非目标设备，脚本终止");
-      //$.msg("🔍 跳过执行", "", "当前网络下无法访问目标设备");
-      $.done({});
-      return;
-    }
-
-    // 提取认证参数
-    let realm = null, nonce = null, qop = null;
-    const parts = authHeader.split(",");
-    parts.forEach(part => {
-      part = part.trim();
-      if (part.startsWith("Digest realm=")) {
-        realm = part.split("=")[1].replace(/"/g, "");
-      } else if (part.startsWith("nonce=")) {
-        nonce = part.split("=")[1].replace(/"/g, "");
-      } else if (part.startsWith("qop=")) {
-        qop = part.split("=")[1].replace(/"/g, "");
-      }
-    });
-
-    if (!realm || !nonce || !qop) {
-      //console.log("❌ 认证参数提取失败");
-      $.done({});
-      return;
-    }
-
-    //console.log("✅ 提取认证参数:");
-    //console.log(`realm: ${realm}`);
-    //console.log(`nonce: ${nonce}`);
-    //console.log(`qop: ${qop}`);
-
-    const username = "admin";
-    const password = "admin";
-    const method = "GET";
-    const uri = "/cgi/protected.cgi";
-    const nc = "00000001";
-
-    //console.log("开始计算md5...");
-    const cnonce = md5(timestamp.toString()).substr(0, 16);
-    //console.log(`cnonce的md5计算完成: ${cnonce}`);
-
-    const ha1 = md5(`${username}:${realm}:${password}`);
-    const ha2 = md5(`${method}:${uri}`);
-    const responseHash = md5(`${ha1}:${nonce}:${nc}:${cnonce}:${qop}:${ha2}`);
-
-    const loginUrl = `${deviceBaseUrl}/login.cgi?Action=Digest` +
-      `&username=${username}` +
-      `&realm=${realm}` +
-      `&nonce=${nonce}` +
-      `&response=${responseHash}` +
-      `&qop=${qop}` +
-      `&cnonce=${cnonce}` +
-      `&temp=marvell` +
-      `&_=${timestamp}`;
-
-    //console.log("📡 登录请求地址:");
-    //console.log(loginUrl);
-
-    const authorization = `Digest username="${username}", realm="${realm}", nonce="${nonce}", uri="${uri}", response="${responseHash}", qop=${qop}, nc=${nc}, cnonce="${cnonce}"`;
-
-    //console.log("📡 authorization:");
-    //console.log(authorization);
-
-    const loginRes = await $task.fetch({
-      url: loginUrl,
-      method: "GET",
-      headers: {
-        "Authorization": authorization,
-        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_4_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Mobile/15E148 Safari/604.1",
-        "Referer": `${deviceBaseUrl}/index.html`,
-        "Accept": "*/*",
-        "X-Requested-With": "XMLHttpRequest",
-        "Accept-Language": "zh-cn",
-        "Accept-Encoding": "gzip, deflate",
-        "Cache-Control": "no-store, no-cache, must-revalidate",
-        "Pragma": "no-cache",
-        "Connection": "keep-alive",
-        "Cookie": "nav=0"
-      }
-    });
-
-    if (loginRes.statusCode === 200) {
-      //console.log("✅ 登录成功！");
-
-      const ts = Date.now();
-      const statusUrl = `${deviceBaseUrl}/xml_action.cgi?method=get&module=duster&file=json_status_info${ts}`;
-
-      const statusReq = {
-        url: statusUrl,
-        method: "GET",
-        headers: {
-          "Authorization": authorization,
-          "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_4_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Mobile/15E148 Safari/604.1",
-          "Referer": `${deviceBaseUrl}/index.html`,
-          "Accept": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-          "Accept-Language": "zh-cn",
-          "Accept-Encoding": "gzip, deflate",
-          "Cache-Control": "no-store, no-cache, must-revalidate",
-          "Pragma": "no-cache",
-          "Connection": "keep-alive",
-          "Cookie": "nav=0"
-        }
-      };
-
-      try {
-        const statusRes = await $task.fetch(statusReq);
-
-        if (statusRes.statusCode === 200) {
-          //console.log("✅ 状态获取成功 ↓↓↓");
-
-          try {
-            const json = JSON.parse(statusRes.body);
-            //console.log("📦 JSON 结构 ↓↓↓");
-            //console.log(JSON.stringify(json, null, 2));
-
-            function formatUptime(seconds) {
-              const h = Math.floor(seconds / 3600);
-              const m = Math.floor((seconds % 3600) / 60);
-              const s = seconds % 60;
-              return `${h}小时 ${m}分钟 ${s}秒`;
-            }
-
-            const battery = json.battery_percent;
-            const charging = json.battery_charging === "1" ? "🟢 正在充电" : "🔴 未充电";
-            const signal = json.signal_quality;
-            const rssi = json.rssi;
-            const uptime = formatUptime(parseInt(json.run_seconds || "0"));
-
-
-
-            if (!$.ouben_dev_no) {
-              $.msg("📡 MIFI 监控", "", "❌ 未配置 dev_no，请到 BoxJS 中填写");
-              $.done();
-            }
-
-            const cardRes = await $task.fetch({
-              url: "http://dongle.ruijiadashop.cn/api/Card/loginCard",
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                dev_no: $.ouben_dev_no
-              }),
-              timeout: 3000
-            });
-
-            //console.log("📡 卡信息响应 ↓↓↓");
-            //console.log(cardRes.body);
-
-            const cardData = JSON.parse(cardRes.body);
-
-            if (cardData.code !== 1 || !cardData.data) {
-              //console.log("❌ 卡信息接口返回异常");
-              return null;
-            }
-
-            const reportTime = cardData.data.equipment?.reportTime || "未知";
-            const remainMB = cardData.data.remainAmount
-              ? (parseFloat(cardData.data.remainAmount) / 1024).toFixed(2)
-              : "未知";
-
-
-
-            const summary =
-              `📶 信号强度: ${signal} / RSSI: ${rssi}\n` +
-              `⌛ 运行时长: ${uptime}\n` +
-              `⏰ 报告时间: ${reportTime}\n` +
-              `💾 剩余流量: ${remainMB} GB`;
-
-            //console.log("📢 状态通知 ↓↓↓");
-            //console.log(summary);
-
-            $.msg(`📡 设备状态 🔋 电量: ${battery}% ${charging}`, "", summary);
-
-          } catch (e) {
-            //console.log("⚠️ 返回内容不是合法 JSON");
-            $.msg("状态获取失败", "", "返回内容无法解析 JSON");
-          }
-        } else {
-          //console.log("状态请求失败，状态码:", statusRes.statusCode);
-          //console.log(statusRes.body);
-        }
-      } catch (err) {
-        //console.log("获取状态时出错:");
-        //console.log(JSON.stringify(err, null, 2));
-      }
-    } else {
-      //console.log("登录失败，状态码:", loginRes.statusCode);
-      $.msg("登录失败", "", `状态码: ${loginRes.statusCode}`);
-    }
-
-    $.done({});
+    await main();
   } catch (err) {
-    //console.log("执行失败:");
-    try {
-      if (typeof err === "string") {
-        //console.log("错误字符串:", err);
-      } else if (err instanceof Error) {
-        //console.log("错误对象:", err.message);
-      } else {
-        //console.log("错误详情:", JSON.stringify(err, null, 2));
-      }
-    } catch (innerErr) {
-      //console.log("无法解析错误信息");
-    }
+    // 捕获任何异常
+    $.msg("执行失败", "", String(err));
+  } finally {
+    // 无论如何执行结束
     $.done({});
   }
 })();
+
+// 核心逻辑封装成一个函数
+async function main() {
+  const timestamp = Date.now();
+  const authUrl = `${deviceBaseUrl}/login.cgi?_=${timestamp}`;
+  const req = { url: authUrl, method: "GET", timeout: 3000 };
+
+  const res = await $task.fetch(req);
+  const authHeader = res.headers["Www-Authenticate"];
+
+  if (!authHeader || !authHeader.includes("Digest")) {
+    $.msg("📡 MIFI 监控", "", "❌ 当前网络下无法访问目标设备");
+    return;
+  }
+
+  // 提取认证参数
+  let realm = null, nonce = null, qop = null;
+  authHeader.split(",").forEach(part => {
+    part = part.trim();
+    if (part.startsWith("Digest realm=")) realm = part.split("=")[1].replace(/"/g, "");
+    if (part.startsWith("nonce=")) nonce = part.split("=")[1].replace(/"/g, "");
+    if (part.startsWith("qop=")) qop = part.split("=")[1].replace(/"/g, "");
+  });
+
+  if (!realm || !nonce || !qop) {
+    $.msg("📡 MIFI 监控", "", "❌ 认证参数提取失败");
+    return;
+  }
+
+  const username = "admin";
+  const password = "admin";
+  const method = "GET";
+  const uri = "/cgi/protected.cgi";
+  const nc = "00000001";
+  const cnonce = md5(timestamp.toString()).substr(0, 16);
+  const ha1 = md5(`${username}:${realm}:${password}`);
+  const ha2 = md5(`${method}:${uri}`);
+  const responseHash = md5(`${ha1}:${nonce}:${nc}:${cnonce}:${qop}:${ha2}`);
+
+  const loginUrl = `${deviceBaseUrl}/login.cgi?Action=Digest` +
+    `&username=${username}&realm=${realm}&nonce=${nonce}&response=${responseHash}` +
+    `&qop=${qop}&cnonce=${cnonce}&temp=marvell&_=${timestamp}`;
+
+  const authorization = `Digest username="${username}", realm="${realm}", nonce="${nonce}", uri="${uri}", response="${responseHash}", qop=${qop}, nc=${nc}, cnonce="${cnonce}"`;
+
+  const loginRes = await $task.fetch({
+    url: loginUrl,
+    method: "GET",
+    headers: {
+      "Authorization": authorization,
+      "User-Agent": "Mozilla/5.0",
+      "Referer": `${deviceBaseUrl}/index.html`,
+      "Accept": "*/*",
+      "Connection": "keep-alive",
+      "Cookie": "nav=0"
+    }
+  });
+
+  if (loginRes.statusCode !== 200) {
+    $.msg("登录失败", "", `状态码: ${loginRes.statusCode}`);
+    return;
+  }
+
+  // 获取状态信息
+  const ts = Date.now();
+  const statusUrl = `${deviceBaseUrl}/xml_action.cgi?method=get&module=duster&file=json_status_info${ts}`;
+  const statusRes = await $task.fetch({
+    url: statusUrl,
+    method: "GET",
+    headers: {
+      "Authorization": authorization,
+      "User-Agent": "Mozilla/5.0",
+      "Referer": `${deviceBaseUrl}/index.html`,
+      "Accept": "application/json",
+      "Connection": "keep-alive",
+      "Cookie": "nav=0"
+    }
+  });
+
+  if (statusRes.statusCode !== 200) {
+    $.msg("状态请求失败", "", `状态码: ${statusRes.statusCode}`);
+    return;
+  }
+
+  const json = JSON.parse(statusRes.body);
+  const battery = json.battery_percent;
+  const charging = json.battery_charging === "1" ? "🟢 充电中" : "";
+  const signal = json.signal_quality;
+  const rssi = json.rssi;
+  const uptime = formatUptime(parseInt(json.run_seconds || "0"));
+
+  if (!$.ouben_dev_no) {
+    $.msg("📡 MIFI 监控", "", "❌ 未配置 dev_no，请到 BoxJS 中填写");
+    return;
+  }
+
+  const cardRes = await $task.fetch({
+    url: "http://dongle.ruijiadashop.cn/api/Card/loginCard",
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ dev_no: $.ouben_dev_no }),
+    timeout: 3000
+  });
+
+  const cardData = JSON.parse(cardRes.body);
+  if (cardData.code !== 1 || !cardData.data) {
+    $.msg("卡信息获取失败", "", "接口返回异常");
+    return;
+  }
+
+  const reportTime = cardData.data.equipment?.reportTime || "未知";
+  const remainMB = cardData.data.remainAmount
+    ? (parseFloat(cardData.data.remainAmount) / 1024).toFixed(2)
+    : "未知";
+
+  const summary =
+    `📶 信号强度: ${signal} / RSSI: ${rssi}\n` +
+    `⌚ 运行时长: ${uptime}\n` +
+    `📄 报告时间: ${reportTime}\n` +
+    `🌊 剩余流量: ${remainMB} GB`;
+
+  $.msg(`📡 设备状态 🔋 电量: ${battery}% ${charging}`, "", summary);
+}
+
+// 格式化运行时长
+function formatUptime(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return `${h}小时 ${m}分钟 ${s}秒`;
+}
+
+// md5 计算
+function md5(str) {
+  return CryptoJS.MD5(str).toString();
+}
+
 
 
 // https://github.com/chavyleung/scripts/blob/master/Env.min.js
