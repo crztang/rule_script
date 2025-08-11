@@ -125,7 +125,7 @@ async function main() {
 
   const cardData = JSON.parse(cardRes.body);
   if (cardData.code !== 1 || !cardData.data) {
-    $.msg("卡信息获取失败", "", "接口返回异常");
+    $.msg("卡信息获取失败", "", `接口返回异常${cardData}`);
     return;
   }
 
