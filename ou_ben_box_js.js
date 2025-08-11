@@ -30,7 +30,7 @@ async function main() {
   const authHeader = res.headers["Www-Authenticate"];
 
   if (!authHeader || !authHeader.includes("Digest")) {
-    $.msg("📡 MIFI 监控", "", "❌ 当前网络下无法访问目标设备");
+    $.log("📡 MIFI 监控", "", "❌ 当前网络下无法访问目标设备");
     return;
   }
 
@@ -44,7 +44,7 @@ async function main() {
   });
 
   if (!realm || !nonce || !qop) {
-    $.msg("📡 MIFI 监控", "", "❌ 认证参数提取失败");
+   $.log("📡 MIFI 监控", "", "❌ 认证参数提取失败");
     return;
   }
 
@@ -78,7 +78,7 @@ async function main() {
   });
 
   if (loginRes.statusCode !== 200) {
-    $.msg("登录失败", "", `状态码: ${loginRes.statusCode}`);
+    $.log("登录失败", "", `状态码: ${loginRes.statusCode}`);
     return;
   }
 
@@ -99,7 +99,7 @@ async function main() {
   });
 
   if (statusRes.statusCode !== 200) {
-    $.msg("状态请求失败", "", `状态码: ${statusRes.statusCode}`);
+    $.log("状态请求失败", "", `状态码: ${statusRes.statusCode}`);
     return;
   }
 
@@ -111,10 +111,10 @@ async function main() {
   const uptime = formatUptime(parseInt(json.run_seconds || "0"));
 
   if (!$.ouben_dev_no) {
-    $.msg("📡 MIFI 监控", "", "❌ 未配置 dev_no，请到 BoxJS 中填写");
+    $.log("📡 MIFI 监控", "", "❌ 未配置 dev_no，请到 BoxJS 中填写");
     return;
   }
-  $.msg(`当前dev_no: ${$.ouben_dev_no}`);
+  $.log(`当前dev_no: ${$.ouben_dev_no}`);
 
   const cardRes = await $task.fetch({
     url: "http://dongle.ruijiadashop.cn/api/Card/loginCard",
@@ -139,7 +139,7 @@ async function main() {
 
   const cardData = JSON.parse(cardRes.body);
   if (cardData.code !== 1 || !cardData.data) {
-    $.msg("卡信息获取失败", "", `接口返回异常: ${JSON.stringify(cardData, null, 2)}`);
+    $.log("卡信息获取失败", "", `接口返回异常: ${JSON.stringify(cardData, null, 2)}`);
     return;
   }
 
