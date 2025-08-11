@@ -114,18 +114,32 @@ async function main() {
     $.msg("📡 MIFI 监控", "", "❌ 未配置 dev_no，请到 BoxJS 中填写");
     return;
   }
+  $.msg(`当前dev_no: ${$.ouben_dev_no}`);
 
   const cardRes = await $task.fetch({
     url: "http://dongle.ruijiadashop.cn/api/Card/loginCard",
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Accept": "*/*",
+      "Accept-Encoding": "gzip, deflate",
+      "Accept-Language": "zh-CN,zh;q=0.9",
+      "Cache-Control": "no-cache",
+      "Content-Type": "application/json",
+      "DNT": "1",
+      "Host": "wifi2.ruijiadashop.cn",
+      "Origin": "http://wifi2.ruijiadashop.cn",
+      "Pragma": "no-cache",
+      "Referer": "http://wifi2.ruijiadashop.cn/index.html",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
+    },
+
     body: JSON.stringify({ dev_no: $.ouben_dev_no }),
     timeout: 3000
   });
 
   const cardData = JSON.parse(cardRes.body);
   if (cardData.code !== 1 || !cardData.data) {
-    $.msg("卡信息获取失败", "", `接口返回异常${cardData}`);
+    $.msg("卡信息获取失败", "", `接口返回异常: ${JSON.stringify(cardData, null, 2)}`);
     return;
   }
 
