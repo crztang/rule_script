@@ -13,7 +13,7 @@ $.ouben_dev_no = $.getdata("ouben_dev_no");
     await main();
   } catch (err) {
     // 捕获任何异常
-    $.msg("执行失败", "", String(err));
+    $.log("执行失败", "", String(err));
   } finally {
     // 无论如何执行结束
     $.done({});
