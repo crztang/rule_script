@@ -137,7 +137,7 @@ async function main() {
     body: JSON.stringify({ dev_no: $.ouben_dev_no }),
     timeout: 3000
   });
-  $.log("loginCard 接口请求完成");
+  $.log("loginCard 接口请求完成"+cardRes.body);
 
   const cardData = JSON.parse(cardRes.body);
   if (cardData.code !== 1 || !cardData.data) {
