@@ -138,6 +138,7 @@ async function main() {
     timeout: 3000
   });
   $.log("loginCard 接口请求完成"+cardRes.body);
+  $.log("测试啊啊啊"+cardRes.body);
 
   const cardData = JSON.parse(cardRes.body);
   if (cardData.code !== 1 || !cardData.data) {
