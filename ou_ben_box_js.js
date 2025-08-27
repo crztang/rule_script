@@ -13,7 +13,7 @@ $.ouben_dev_no = $.getdata("ouben_dev_no");
     await main();
   } catch (err) {
     // 捕获任何异常
-     $.log("执行失败:", err.stack || err.message || String(err));
+    $.log("执行失败:", err.stack || err.message || String(err));
   } finally {
     // 无论如何执行结束
     $.done({});
@@ -44,7 +44,7 @@ async function main() {
   });
 
   if (!realm || !nonce || !qop) {
-   $.log("📡 MIFI 监控", "", "❌ 认证参数提取失败");
+    $.log("📡 MIFI 监控", "", "❌ 认证参数提取失败");
     return;
   }
 
@@ -64,6 +64,7 @@ async function main() {
 
   const authorization = `Digest username="${username}", realm="${realm}", nonce="${nonce}", uri="${uri}", response="${responseHash}", qop=${qop}, nc=${nc}, cnonce="${cnonce}"`;
 
+  $.log("尝试登录设备...");
   const loginRes = await $task.fetch({
     url: loginUrl,
     method: "GET",
@@ -76,7 +77,7 @@ async function main() {
       "Cookie": "nav=0"
     }
   });
-
+  $.log("登录请求发送");
   if (loginRes.statusCode !== 200) {
     $.log("登录失败", "", `状态码: ${loginRes.statusCode}`);
     return;
