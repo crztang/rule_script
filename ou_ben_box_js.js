@@ -118,7 +118,7 @@ async function main() {
   $.log(`当前dev_no: ${$.ouben_dev_no}`);
 
   const cardRes = await $task.fetch({
-    url: "http://wifi3.ruijiadashop.cn/api/Card/loginCard/api/Card/loginCard",
+    url: "http://wifi3.ruijiadashop.cn/api/Card/loginCard",
     method: "GET",
     headers: {
       "Accept": "*/*",
@@ -127,10 +127,6 @@ async function main() {
       "Cache-Control": "no-cache",
       "Content-Type": "application/json",
       "DNT": "1",
-      "Host": "wifi2.ruijiadashop.cn",
-      "Origin": "http://wifi2.ruijiadashop.cn",
-      "Pragma": "no-cache",
-      "Referer": "http://wifi2.ruijiadashop.cn/index.html",
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
     },
 
