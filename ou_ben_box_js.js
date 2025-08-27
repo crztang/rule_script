@@ -118,8 +118,8 @@ async function main() {
   $.log(`当前dev_no: ${$.ouben_dev_no}`);
 
   const cardRes = await $task.fetch({
-    url: "http://dongle.ruijiadashop.cn/api/Card/loginCard",
-    method: "POST",
+    url: "http://wifi3.ruijiadashop.cn/api/Card/loginCard/api/Card/loginCard",
+    method: "GET",
     headers: {
       "Accept": "*/*",
       "Accept-Encoding": "gzip, deflate",
